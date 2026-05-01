@@ -2,68 +2,110 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>接客記録</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#f5f5f7;color:#1c1c1e;min-height:100vh}
-.app{max-width:430px;margin:0 auto;padding:12px}
-.tab-bar{display:flex;gap:3px;background:#e5e5ea;border-radius:12px;padding:3px;margin-bottom:14px;position:sticky;top:8px;z-index:10}
-.tab{flex:1;padding:8px 2px;text-align:center;font-size:12px;border-radius:9px;cursor:pointer;border:none;background:transparent;color:#8e8e93;font-weight:400;transition:all .15s}
-.tab.active{background:#fff;color:#1c1c1e;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.section-label{font-size:11px;color:#8e8e93;margin-bottom:8px;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
-.today-date{font-size:20px;font-weight:600;color:#1c1c1e;margin-bottom:2px}
-.today-sub{font-size:13px;color:#8e8e93;margin-bottom:12px}
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.metric{background:#f5f5f7;border-radius:12px;padding:12px}
-.metric-label{font-size:11px;color:#8e8e93;margin-bottom:4px}
-.metric-value{font-size:24px;font-weight:600;color:#1c1c1e}
-.metric-sub{font-size:11px;color:#8e8e93;margin-top:2px}
-.pattern-btns{display:grid;gap:8px}
-.pat-btn{display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:14px;border:1.5px solid #e5e5ea;background:#fff;cursor:pointer;text-align:left;min-height:60px;transition:transform .1s;-webkit-tap-highlight-color:transparent;width:100%}
-.pat-btn:active{transform:scale(0.97)}
-.pat-btn.loading{opacity:0.5;pointer-events:none}
-.pat-left{display:flex;align-items:center;gap:10px}
-.pat-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
-.pat-name{font-size:14px;color:#1c1c1e;font-weight:400;line-height:1.3}
-.pat-count{font-size:26px;font-weight:700;min-width:36px;text-align:right}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c1c1e;color:#fff;border-radius:20px;padding:10px 20px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:100;white-space:nowrap}
-.toast.err{background:#ff3b30}
-.toast.show{opacity:1}
-.undo-row{display:flex;justify-content:flex-end;margin-top:4px}
-.undo-btn{padding:7px 16px;font-size:13px;border:1px solid #e5e5ea;border-radius:20px;background:#fff;color:#636366;cursor:pointer}
-.filter-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
-.f-btn{padding:5px 13px;font-size:12px;border-radius:20px;border:1px solid #e5e5ea;background:#fff;color:#636366;cursor:pointer}
-.f-btn.active{background:#1c1c1e;color:#fff;border-color:#1c1c1e;font-weight:600}
-.chart-wrap{position:relative;width:100%;height:220px;margin:4px 0 10px}
-.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
-.legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#636366}
-.legend-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0}
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{padding:8px 5px;text-align:left;color:#8e8e93;font-weight:500;border-bottom:1px solid #f2f2f7}
-.tbl td{padding:8px 5px;border-bottom:1px solid #f2f2f7;color:#1c1c1e}
-.tbl td.r{text-align:right}
-.tbl tr.tot td{font-weight:600;border-top:1.5px solid #e5e5ea}
-.period-sel{width:100%;margin-bottom:10px;padding:8px 12px;border:1px solid #e5e5ea;border-radius:10px;font-size:14px;background:#fff;-webkit-appearance:none}
-.log-item{padding:10px 0;border-bottom:1px solid #f2f2f7;display:flex;justify-content:space-between;align-items:center}
-.log-item:last-child{border-bottom:none}
-.log-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
-.log-name{font-size:13px;color:#1c1c1e}
-.log-time{font-size:12px;color:#8e8e93}
-.setup-card{background:#fff8ec;border:1px solid #ffcc00;border-radius:14px;padding:14px;margin-bottom:10px}
-.setup-title{font-size:13px;font-weight:600;color:#7a5c00;margin-bottom:4px}
-input[type=url]{width:100%;padding:10px 12px;border:1px solid #e5e5ea;border-radius:10px;font-size:13px;margin-bottom:8px;-webkit-appearance:none}
-.btn-primary{width:100%;padding:13px;font-size:15px;font-weight:600;border-radius:12px;cursor:pointer;border:none;background:#1c1c1e;color:#fff;margin-top:4px}
-.btn-primary:active{opacity:.8}
-.empty{text-align:center;padding:28px;color:#8e8e93;font-size:14px}
-.conn-ok{color:#34c759;font-weight:500}
-.conn-err{color:#ff3b30;font-weight:500}
+:root {
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --label: #8e8e93;
+  --border: #e5e5ea;
+  --primary: #1c1c1e;
+  --radius: 18px;
+  --radius-sm: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, 'Helvetica Neue', sans-serif; background: var(--bg); color: var(--primary); min-height: 100vh; }
+
+.app { max-width: 820px; margin: 0 auto; padding: 20px 24px 40px; }
+
+/* TAB BAR */
+.tab-bar { display: flex; gap: 4px; background: #dddde6; border-radius: 16px; padding: 4px; margin-bottom: 22px; }
+.tab { flex: 1; padding: 12px 8px; text-align: center; font-size: 15px; border-radius: 13px; cursor: pointer; border: none; background: transparent; color: #636366; font-weight: 400; transition: all .15s; }
+.tab.active { background: #fff; color: var(--primary); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.13); }
+
+/* CARDS */
+.card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.section-label { font-size: 12px; color: var(--label); margin-bottom: 12px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; }
+
+/* RECORD TAB */
+.header-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.today-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.today-date { font-size: 22px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+.today-sub { font-size: 14px; color: var(--label); margin-bottom: 18px; }
+.metrics-inline { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.metric { background: var(--bg); border-radius: var(--radius-sm); padding: 14px; }
+.metric-label { font-size: 11px; color: var(--label); margin-bottom: 6px; font-weight: 600; }
+.metric-value { font-size: 28px; font-weight: 700; color: var(--primary); line-height: 1; }
+.metric-sub { font-size: 11px; color: var(--label); margin-top: 4px; }
+
+/* PATTERN BUTTONS — 2 column grid */
+.pat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pat-btn {
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 20px; border-radius: var(--radius); border: 2px solid #e5e5ea;
+  background: #fff; cursor: pointer; text-align: left;
+  min-height: 140px; transition: transform .1s, box-shadow .1s;
+  width: 100%;
+}
+.pat-btn:active { transform: scale(0.96); box-shadow: 0 0 0 4px rgba(0,0,0,.06); }
+.pat-btn.loading { opacity: 0.45; pointer-events: none; }
+.pat-abbr { font-size: 26px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 6px; }
+.pat-full { font-size: 12px; color: #8e8e93; line-height: 1.5; margin-bottom: 14px; }
+.pat-count-row { display: flex; align-items: baseline; justify-content: flex-end; gap: 4px; }
+.pat-count { font-size: 44px; font-weight: 800; line-height: 1; }
+.pat-unit { font-size: 14px; color: #8e8e93; }
+
+.undo-row { display: flex; justify-content: flex-end; margin-top: 8px; }
+.undo-btn { padding: 10px 22px; font-size: 14px; border: 1.5px solid var(--border); border-radius: 24px; background: var(--card); color: #636366; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.undo-btn:active { background: var(--bg); }
+
+/* TOAST */
+.toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1c1c1e; color: #fff; border-radius: 24px; padding: 13px 26px; font-size: 15px; font-weight: 500; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 100; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+.toast.err { background: #ff3b30; }
+.toast.show { opacity: 1; }
+
+/* CHART TAB */
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.f-btn { padding: 8px 18px; font-size: 14px; border-radius: 24px; border: 1.5px solid var(--border); background: var(--card); color: #636366; cursor: pointer; font-weight: 400; }
+.f-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
+.period-sel { width: 100%; margin-bottom: 12px; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 16px; background: var(--card); -webkit-appearance: none; }
+.chart-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.chart-wrap { position: relative; width: 100%; height: 260px; margin: 6px 0 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #636366; }
+.legend-sq { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { padding: 10px 8px; text-align: left; color: var(--label); font-weight: 600; border-bottom: 1.5px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
+.tbl td { padding: 12px 8px; border-bottom: 1px solid #f2f2f7; color: var(--primary); }
+.tbl td.r { text-align: right; font-variant-numeric: tabular-nums; }
+.tbl tr.tot td { font-weight: 700; border-top: 2px solid var(--border); border-bottom: none; }
+
+/* LOG TAB */
+.log-item { padding: 14px 0; border-bottom: 1px solid #f2f2f7; display: flex; justify-content: space-between; align-items: center; }
+.log-item:last-child { border-bottom: none; }
+.log-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
+.log-name { font-size: 15px; color: var(--primary); font-weight: 500; }
+.log-time { font-size: 14px; color: var(--label); }
+
+/* SETTINGS */
+input[type=url] { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; margin-bottom: 10px; -webkit-appearance: none; background: var(--bg); }
+.btn-primary { width: 100%; padding: 16px; font-size: 16px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: #fff; }
+.btn-primary:active { opacity: .82; }
+.setup-card { background: #fff8ec; border: 1.5px solid #ffcc00; border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+.setup-title { font-size: 14px; font-weight: 700; color: #7a5c00; margin-bottom: 4px; }
+.conn-ok { color: #34c759; font-weight: 600; }
+.conn-err { color: #ff3b30; font-weight: 600; }
+.empty { text-align: center; padding: 40px; color: var(--label); font-size: 15px; }
 </style>
 </head>
 <body>
 <div class="app">
+
   <div class="tab-bar">
     <button class="tab active" onclick="showTab('record')">記録</button>
     <button class="tab" onclick="showTab('chart')">グラフ</button>
@@ -78,18 +120,38 @@ input[type=url]{width:100%;padding:10px 12px;border:1px solid #e5e5ea;border-rad
     <div id="setup-warn" class="setup-card" style="display:none">
       <div class="setup-title">設定タブでGAS URLを登録してください</div>
     </div>
-    <div class="card" style="padding:14px 14px 10px">
-      <div class="today-date" id="today-disp"></div>
-      <div class="today-sub" id="today-sub">本日の記録：0件</div>
-      <div class="metrics">
-        <div class="metric"><div class="metric-label">本日 合計</div><div class="metric-value" id="m-total">0</div><div class="metric-sub">件</div></div>
-        <div class="metric"><div class="metric-label">TO→EI 転換率</div><div class="metric-value" id="m-rate">—</div><div class="metric-sub">施策効果</div></div>
+
+    <div class="header-row">
+      <div class="today-card">
+        <div class="today-date" id="today-disp"></div>
+        <div class="today-sub" id="today-sub">本日の記録：0件</div>
+        <div class="metrics-inline">
+          <div class="metric">
+            <div class="metric-label">本日 合計</div>
+            <div class="metric-value" id="m-total">0</div>
+            <div class="metric-sub">件</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">TO→EI 転換率</div>
+            <div class="metric-value" id="m-rate">—</div>
+            <div class="metric-sub">施策効果</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;padding:28px">
+        <div style="font-size:13px;color:var(--label);margin-bottom:10px;font-weight:600;">本日の内訳</div>
+        <div style="position:relative;width:160px;height:160px;">
+          <canvas id="todayPie"></canvas>
+        </div>
       </div>
     </div>
+
     <div class="card">
       <div class="section-label">接客パターンをタップして記録</div>
-      <div class="pattern-btns" id="pat-btns"></div>
+      <div class="pat-grid" id="pat-btns"></div>
     </div>
+
     <div class="undo-row">
       <button class="undo-btn" onclick="undoLast()">最後の1件を取り消す</button>
     </div>
@@ -97,8 +159,8 @@ input[type=url]{width:100%;padding:10px 12px;border:1px solid #e5e5ea;border-rad
 
   <!-- CHART -->
   <div id="tab-chart" style="display:none">
-    <div class="card" style="padding:12px">
-      <div class="section-label" style="margin-bottom:6px">期間フィルター</div>
+    <div class="card" style="padding:18px">
+      <div class="section-label" style="margin-bottom:8px">期間フィルター</div>
       <div class="filter-row" id="ptype-btns">
         <button class="f-btn active" onclick="setPtype('month')">月別</button>
         <button class="f-btn" onclick="setPtype('quarter')">四半期</button>
@@ -107,16 +169,21 @@ input[type=url]{width:100%;padding:10px 12px;border:1px solid #e5e5ea;border-rad
       </div>
       <div id="psel-wrap"><select class="period-sel" id="period-sel" onchange="renderCharts()"></select></div>
     </div>
-    <div class="metrics" id="chart-metrics"></div>
-    <div class="card" style="padding:12px 12px 6px">
-      <div class="section-label">構成比</div>
-      <div class="legend" id="pie-legend"></div>
-      <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+
+    <div class="chart-metrics" id="chart-metrics"></div>
+
+    <div class="chart-row">
+      <div class="card" style="padding:18px 18px 10px">
+        <div class="section-label">構成比</div>
+        <div class="legend" id="pie-legend"></div>
+        <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+      </div>
+      <div class="card" style="padding:18px 18px 10px">
+        <div class="section-label">件数比較</div>
+        <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+      </div>
     </div>
-    <div class="card" style="padding:12px 12px 6px">
-      <div class="section-label">件数比較</div>
-      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
-    </div>
+
     <div class="card">
       <div class="section-label">実数データ</div>
       <table class="tbl">
@@ -138,42 +205,60 @@ input[type=url]{width:100%;padding:10px 12px;border:1px solid #e5e5ea;border-rad
   <div id="tab-settings" style="display:none">
     <div class="card">
       <div class="section-label">GAS ウェブアプリURL</div>
-      <p style="font-size:12px;color:#8e8e93;margin-bottom:10px;line-height:1.6">Google Apps ScriptでデプロイしたウェブアプリのURLを貼り付けてください</p>
+      <p style="font-size:14px;color:var(--label);margin-bottom:14px;line-height:1.6">Google Apps ScriptでデプロイしたウェブアプリのURLを貼り付けてください</p>
       <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec">
       <button class="btn-primary" onclick="saveUrl()">URLを保存して接続テスト</button>
-      <div id="url-status" style="font-size:12px;margin-top:10px;color:#8e8e93"></div>
+      <div id="url-status" style="font-size:13px;margin-top:12px;color:var(--label)"></div>
     </div>
     <div class="card">
       <div class="section-label">接続ステータス</div>
-      <div id="conn-status" style="font-size:14px;color:#8e8e93">未接続</div>
+      <div id="conn-status" style="font-size:15px;color:var(--label)">未接続</div>
+    </div>
+    <div class="card">
+      <div class="section-label">営業時間</div>
+      <p style="font-size:14px;color:var(--label);line-height:1.7">19:00 〜 27:00（翌3:00）<br>深夜3:00までは前日の営業日として記録されます。</p>
     </div>
   </div>
+
 </div>
 
 <script>
+const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbz48I6XXHCI80tmchryklJFv6K2nQQN4_Ge1Xj-E6qhvH-45ccLO6-W7abPV607SbYIog/exec';
 const PATTERNS = [
-  {name:'TO → EI', full:'テイクアウト → イートイン', color:'#E17A2F', bg:'#fff5ee'},
-  {name:'EI → TO', full:'イートイン → テイクアウト', color:'#1565C0', bg:'#eef4ff'},
-  {name:'TO → TO', full:'テイクアウト → テイクアウト', color:'#2E7D32', bg:'#f0faf0'},
-  {name:'EI → EI', full:'イートイン → イートイン',   color:'#6A1B9A', bg:'#f8f0ff'},
+  {name:'TO → EI', full:'テイクアウト → イートイン', color:'#E17A2F', bg:'#fff8f2'},
+  {name:'EI → TO', full:'イートイン → テイクアウト', color:'#1565C0', bg:'#f0f5ff'},
+  {name:'TO → TO', full:'テイクアウト → テイクアウト', color:'#2E7D32', bg:'#f2faf2'},
+  {name:'EI → EI', full:'イートイン → イートイン',   color:'#6A1B9A', bg:'#faf2ff'},
 ];
-const COLORS_A = ['rgba(225,122,47,.82)','rgba(21,101,192,.82)','rgba(46,125,50,.82)','rgba(106,27,154,.82)'];
+const COLORS_A = ['rgba(225,122,47,.85)','rgba(21,101,192,.85)','rgba(46,125,50,.85)','rgba(106,27,154,.85)'];
 
-// --- グローバル状態（タブ切替でリセットしない）---
 const state = {
-  allRows: null,       // null=未ロード, []=ロード済み
+  allRows: null,
   todayCounts: [0,0,0,0],
   ptype: 'month',
-  pieInst: null,
-  barInst: null,
+  pieInst: null, barInst: null, todayPieInst: null,
 };
 
-const getSavedUrl = () => localStorage.getItem('cafe_gas_url') || '';
+const getSavedUrl = () => localStorage.getItem('cafe_gas_url') || DEFAULT_GAS_URL;
 const setSavedUrl = u => localStorage.setItem('cafe_gas_url', u);
-const today = () => new Date().toISOString().slice(0,10);
+
+function businessDate() {
+  const now = new Date();
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  if (jst.getUTCHours() < 3) jst.setUTCDate(jst.getUTCDate() - 1);
+  return jst.toISOString().slice(0, 10);
+}
+function businessDateObj() {
+  const now = new Date();
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  if (jst.getUTCHours() < 3) jst.setUTCDate(jst.getUTCDate() - 1);
+  return jst;
+}
+const today = () => businessDate();
 const todayJP = () => {
-  const d = new Date(), wd = '日月火水木金土'[d.getDay()];
-  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${wd}）`;
+  const d = businessDateObj();
+  const wd = '日月火水木金土'[d.getUTCDay()];
+  return `${d.getUTCFullYear()}年${d.getUTCMonth()+1}月${d.getUTCDate()}日（${wd}）`;
 };
 
 function showTab(t) {
@@ -181,12 +266,8 @@ function showTab(t) {
     document.getElementById('tab-'+id).style.display = id===t ? 'block' : 'none');
   document.querySelectorAll('.tab').forEach((el,i) =>
     el.classList.toggle('active', ['record','chart','log','settings'][i]===t));
-  if(t==='chart') {
-    ensureLoaded().then(() => { initPeriod(); renderCharts(); });
-  }
-  if(t==='log') {
-    ensureLoaded().then(renderLog);
-  }
+  if(t==='chart') ensureLoaded().then(() => { initPeriod(); renderCharts(); });
+  if(t==='log') ensureLoaded().then(renderLog);
 }
 
 function showToast(msg, isErr=false) {
@@ -199,13 +280,12 @@ function showToast(msg, isErr=false) {
 
 async function gasCall(params) {
   const url = getSavedUrl();
-  if(!url) throw new Error('URL未設定');
+  if(!url || url === 'YOUR_GAS_URL_HERE') throw new Error('URL未設定');
   const res = await fetch(url + '?' + new URLSearchParams(params));
   if(!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
 
-// ロード済みならスキップ（タブ切替で再通信しない）
 async function ensureLoaded() {
   if(state.allRows !== null) return;
   await loadAll();
@@ -217,8 +297,8 @@ async function loadAll() {
     state.allRows = d.rows || [];
     recalcToday();
     updateTodayUI();
-    const n = state.allRows.length;
-    document.getElementById('conn-status').innerHTML = `<span class="conn-ok">接続済み（${n}件）</span>`;
+    document.getElementById('conn-status').innerHTML =
+      `<span class="conn-ok">接続済み（${state.allRows.length}件）</span>`;
   } catch(e) {
     state.allRows = state.allRows || [];
     document.getElementById('conn-status').innerHTML = '<span class="conn-err">接続エラー</span>';
@@ -236,9 +316,42 @@ function recalcToday() {
 function updateTodayUI() {
   const total = state.todayCounts.reduce((a,b)=>a+b,0);
   document.getElementById('m-total').textContent = total;
-  document.getElementById('m-rate').textContent = total ? Math.round(state.todayCounts[0]/total*100)+'%' : '—';
+  document.getElementById('m-rate').textContent =
+    total ? Math.round(state.todayCounts[0]/total*100)+'%' : '—';
   document.getElementById('today-sub').textContent = '本日の記録：' + total + '件';
-  document.querySelectorAll('.pat-count').forEach((el,i) => el.textContent = state.todayCounts[i]);
+  document.querySelectorAll('.pat-count').forEach((el,i) =>
+    el.textContent = state.todayCounts[i]);
+  renderTodayPie();
+}
+
+function renderTodayPie() {
+  const canvas = document.getElementById('todayPie');
+  if(!canvas) return;
+  if(state.todayPieInst) state.todayPieInst.destroy();
+  const total = state.todayCounts.reduce((a,b)=>a+b,0);
+  const data = total > 0 ? state.todayCounts : [1,1,1,1];
+  const alpha = total > 0 ? PATTERNS.map(p=>p.color) : ['#e5e5ea','#e5e5ea','#e5e5ea','#e5e5ea'];
+  state.todayPieInst = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: PATTERNS.map(p=>p.name),
+      datasets: [{
+        data,
+        backgroundColor: alpha,
+        borderWidth: total > 0 ? 2 : 0,
+        borderColor: 'rgba(255,255,255,.9)',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '62%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: total > 0, callbacks: {
+          label: ctx => ` ${ctx.raw}件 (${Math.round(ctx.raw/total*100)}%)`
+        }}
+      }
+    }
+  });
 }
 
 async function addRecord(idx) {
@@ -248,10 +361,12 @@ async function addRecord(idx) {
     const now = new Date();
     const jst = new Date(now.getTime() + 9*60*60*1000);
     await gasCall({action:'add', date:today(), pattern:PATTERNS[idx].name, pattern_index:idx});
-    // ローカル状態を即時更新（再ロード不要）
     state.todayCounts[idx]++;
     if(state.allRows !== null) {
-      state.allRows.push({timestamp: jst.toISOString(), date: today(), pattern: PATTERNS[idx].name, pattern_index: idx});
+      state.allRows.push({
+        timestamp: jst.toISOString(), date: today(),
+        pattern: PATTERNS[idx].name, pattern_index: idx
+      });
     }
     updateTodayUI();
     showToast(PATTERNS[idx].name + ' を記録しました');
@@ -265,7 +380,6 @@ async function addRecord(idx) {
 async function undoLast() {
   try {
     await gasCall({action:'delete_last'});
-    // ローカルからも末尾を削除
     if(state.allRows && state.allRows.length > 0) {
       state.allRows.pop();
       recalcToday();
@@ -278,15 +392,16 @@ async function undoLast() {
 
 function buildPatBtns() {
   document.getElementById('pat-btns').innerHTML = PATTERNS.map((p,i) => `
-    <button class="pat-btn" onclick="addRecord(${i})" style="border-color:${p.color}44;background:${p.bg}">
-      <div class="pat-left">
-        <span class="pat-dot" style="background:${p.color}"></span>
-        <div>
-          <div class="pat-name" style="font-weight:600;color:${p.color}">${p.name}</div>
-          <div style="font-size:11px;color:#8e8e93;margin-top:2px">${p.full}</div>
-        </div>
+    <button class="pat-btn" onclick="addRecord(${i})"
+      style="border-color:${p.color}55;background:${p.bg}">
+      <div>
+        <div class="pat-abbr" style="color:${p.color}">${p.name}</div>
+        <div class="pat-full">${p.full}</div>
       </div>
-      <span class="pat-count" style="color:${p.color}">0</span>
+      <div class="pat-count-row">
+        <span class="pat-count" style="color:${p.color}">0</span>
+        <span class="pat-unit">件</span>
+      </div>
     </button>`).join('');
 }
 
@@ -338,34 +453,57 @@ function renderCharts() {
   const grand = totals.reduce((a,b)=>a+b,0);
 
   document.getElementById('chart-metrics').innerHTML =
-    `<div class="metric"><div class="metric-label">総接客数</div><div class="metric-value">${grand}</div><div class="metric-sub">件</div></div>
-     <div class="metric"><div class="metric-label">TO→EI 転換率</div><div class="metric-value">${grand?Math.round(totals[0]/grand*100)+'%':'—'}</div><div class="metric-sub">施策効果</div></div>`;
+    `<div class="metric" style="background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.06)">
+       <div class="metric-label">総接客数</div>
+       <div class="metric-value">${grand}</div>
+       <div class="metric-sub">件</div>
+     </div>
+     <div class="metric" style="background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.06)">
+       <div class="metric-label">TO→EI 転換率</div>
+       <div class="metric-value">${grand?Math.round(totals[0]/grand*100)+'%':'—'}</div>
+       <div class="metric-sub">施策効果</div>
+     </div>`;
 
   document.getElementById('pie-legend').innerHTML = PATTERNS.map((p,i) =>
-    `<span class="legend-item"><span class="legend-sq" style="background:${p.color}"></span>${p.name} ${grand?Math.round(totals[i]/grand*100):0}%</span>`).join('');
+    `<span class="legend-item">
+       <span class="legend-sq" style="background:${p.color}"></span>
+       ${p.name} ${grand?Math.round(totals[i]/grand*100):0}%
+     </span>`).join('');
 
   if(state.pieInst) state.pieInst.destroy();
   state.pieInst = new Chart(document.getElementById('pieChart'), {
     type:'doughnut',
-    data:{labels:PATTERNS.map(p=>p.name),datasets:[{data:totals,backgroundColor:PATTERNS.map(p=>p.color),borderWidth:2,borderColor:'rgba(255,255,255,.8)'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:ctx=>{const p=grand?Math.round(ctx.raw/grand*100):0;return ` ${ctx.raw}件 (${p}%)`;}}}}}
+    data:{labels:PATTERNS.map(p=>p.name),datasets:[{
+      data:totals,backgroundColor:PATTERNS.map(p=>p.color),
+      borderWidth:2,borderColor:'rgba(255,255,255,.85)'
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>{const p=grand?Math.round(ctx.raw/grand*100):0;return ` ${ctx.raw}件 (${p}%)`;}}}}}
   });
 
   if(state.barInst) state.barInst.destroy();
   state.barInst = new Chart(document.getElementById('barChart'), {
     type:'bar',
-    data:{labels:PATTERNS.map(p=>p.name),datasets:[{data:totals,backgroundColor:COLORS_A,borderColor:PATTERNS.map(p=>p.color),borderWidth:1,borderRadius:6}]},
+    data:{labels:PATTERNS.map(p=>p.name),datasets:[{
+      data:totals,backgroundColor:COLORS_A,
+      borderColor:PATTERNS.map(p=>p.color),borderWidth:1,borderRadius:8
+    }]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
-      scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}},
-              x:{ticks:{font:{size:11},maxRotation:0},grid:{display:false}}}}
+      scales:{
+        y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.04)'}},
+        x:{ticks:{font:{size:12},maxRotation:0},grid:{display:false}}
+      }}
   });
 
   document.getElementById('data-tbody').innerHTML =
     PATTERNS.map((p,i) => `<tr>
-      <td><span class="log-dot" style="background:${p.color}"></span>${p.name}</td>
-      <td class="r">${totals[i]}</td><td class="r">${grand?Math.round(totals[i]/grand*100):0}%</td>
+      <td><span class="log-dot" style="background:${p.color}"></span>${p.name}
+        <span style="font-size:12px;color:#8e8e93;margin-left:6px">${p.full}</span>
+      </td>
+      <td class="r">${totals[i]}</td>
+      <td class="r">${grand?Math.round(totals[i]/grand*100):0}%</td>
     </tr>`).join('') +
     `<tr class="tot"><td>合計</td><td class="r">${grand}</td><td class="r">100%</td></tr>`;
 }
@@ -377,9 +515,15 @@ function renderLog() {
   el.innerHTML = todayRows.map(r => {
     const i = parseInt(r.pattern_index);
     const p = PATTERNS[i] || {name:r.pattern, color:'#888'};
-    const ts = r.timestamp ? new Date(r.timestamp).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}) : '';
+    const ts = r.timestamp
+      ? new Date(new Date(r.timestamp).getTime()).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})
+      : '';
     return `<div class="log-item">
-      <span><span class="log-dot" style="background:${p.color}"></span><span class="log-name">${p.name}</span></span>
+      <span>
+        <span class="log-dot" style="background:${p.color}"></span>
+        <span class="log-name">${p.name}</span>
+        <span style="font-size:13px;color:#8e8e93;margin-left:8px">${p.full}</span>
+      </span>
       <span class="log-time">${ts}</span>
     </div>`;
   }).join('');
@@ -392,9 +536,8 @@ async function saveUrl() {
   document.getElementById('url-status').textContent = 'テスト中...';
   state.allRows = null;
   await loadAll();
-  const rows = state.allRows;
-  if(rows !== null) {
-    document.getElementById('url-status').textContent = '接続成功！ ' + rows.length + '件のデータが見つかりました';
+  if(state.allRows !== null) {
+    document.getElementById('url-status').textContent = '接続成功！ ' + state.allRows.length + '件のデータが見つかりました';
     document.getElementById('setup-warn').style.display = 'none';
     showToast('接続しました');
   } else {
@@ -406,8 +549,9 @@ async function saveUrl() {
 (async function init() {
   buildPatBtns();
   document.getElementById('today-disp').textContent = todayJP();
+  renderTodayPie();
   const saved = getSavedUrl();
-  if(saved) {
+  if(saved && saved !== 'YOUR_GAS_URL_HERE') {
     document.getElementById('gas-url-input').value = saved;
     document.getElementById('setup-warn').style.display = 'none';
     await loadAll();
