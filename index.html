@@ -551,7 +551,7 @@ async function saveUrl() {
   document.getElementById('today-disp').textContent = todayJP();
   renderTodayPie();
   const saved = getSavedUrl();
-  if(saved && saved !== 'YOUR_GAS_URL_HERE') {
+  if(saved && saved !== 'https://script.google.com/macros/s/AKfycbz48I6XXHCI80tmchryklJFv6K2nQQN4_Ge1Xj-E6qhvH-45ccLO6-W7abPV607SbYIog/exec') {
     document.getElementById('gas-url-input').value = saved;
     document.getElementById('setup-warn').style.display = 'none';
     await loadAll();
