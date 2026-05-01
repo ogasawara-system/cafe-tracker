@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>接客記録</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#f5f5f7;color:#1c1c1e;min-height:100vh}
+.app{max-width:430px;margin:0 auto;padding:12px}
+.tab-bar{display:flex;gap:3px;background:#e5e5ea;border-radius:12px;padding:3px;margin-bottom:14px;position:sticky;top:8px;z-index:10}
+.tab{flex:1;padding:8px 2px;text-align:center;font-size:12px;border-radius:9px;cursor:pointer;border:none;background:transparent;color:#8e8e93;font-weight:400;transition:all .15s}
+.tab.active{background:#fff;color:#1c1c1e;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.section-label{font-size:11px;color:#8e8e93;margin-bottom:8px;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+.today-date{font-size:20px;font-weight:600;color:#1c1c1e;margin-bottom:2px}
+.today-sub{font-size:13px;color:#8e8e93;margin-bottom:12px}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.metric{background:#f5f5f7;border-radius:12px;padding:12px}
+.metric-label{font-size:11px;color:#8e8e93;margin-bottom:4px}
+.metric-value{font-size:24px;font-weight:600;color:#1c1c1e}
+.metric-sub{font-size:11px;color:#8e8e93;margin-top:2px}
+.pattern-btns{display:grid;gap:8px}
+.pat-btn{display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:14px;border:1.5px solid #e5e5ea;background:#fff;cursor:pointer;text-align:left;min-height:60px;transition:transform .1s;-webkit-tap-highlight-color:transparent;width:100%}
+.pat-btn:active{transform:scale(0.97)}
+.pat-btn.loading{opacity:0.5;pointer-events:none}
+.pat-left{display:flex;align-items:center;gap:10px}
+.pat-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.pat-name{font-size:14px;color:#1c1c1e;font-weight:400;line-height:1.3}
+.pat-count{font-size:26px;font-weight:700;min-width:36px;text-align:right}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c1c1e;color:#fff;border-radius:20px;padding:10px 20px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:100;white-space:nowrap}
+.toast.err{background:#ff3b30}
+.toast.show{opacity:1}
+.undo-row{display:flex;justify-content:flex-end;margin-top:4px}
+.undo-btn{padding:7px 16px;font-size:13px;border:1px solid #e5e5ea;border-radius:20px;background:#fff;color:#636366;cursor:pointer}
+.filter-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.f-btn{padding:5px 13px;font-size:12px;border-radius:20px;border:1px solid #e5e5ea;background:#fff;color:#636366;cursor:pointer}
+.f-btn.active{background:#1c1c1e;color:#fff;border-color:#1c1c1e;font-weight:600}
+.chart-wrap{position:relative;width:100%;height:220px;margin:4px 0 10px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#636366}
+.legend-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{padding:8px 5px;text-align:left;color:#8e8e93;font-weight:500;border-bottom:1px solid #f2f2f7}
+.tbl td{padding:8px 5px;border-bottom:1px solid #f2f2f7;color:#1c1c1e}
+.tbl td.r{text-align:right}
+.tbl tr.tot td{font-weight:600;border-top:1.5px solid #e5e5ea}
+.period-sel{width:100%;margin-bottom:10px;padding:8px 12px;border:1px solid #e5e5ea;border-radius:10px;font-size:14px;background:#fff;-webkit-appearance:none}
+.log-item{padding:10px 0;border-bottom:1px solid #f2f2f7;display:flex;justify-content:space-between;align-items:center}
+.log-item:last-child{border-bottom:none}
+.log-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
+.log-name{font-size:13px;color:#1c1c1e}
+.log-time{font-size:12px;color:#8e8e93}
+.setup-card{background:#fff8ec;border:1px solid #ffcc00;border-radius:14px;padding:14px;margin-bottom:10px}
+.setup-title{font-size:13px;font-weight:600;color:#7a5c00;margin-bottom:4px}
+input[type=url]{width:100%;padding:10px 12px;border:1px solid #e5e5ea;border-radius:10px;font-size:13px;margin-bottom:8px;-webkit-appearance:none}
+.btn-primary{width:100%;padding:13px;font-size:15px;font-weight:600;border-radius:12px;cursor:pointer;border:none;background:#1c1c1e;color:#fff;margin-top:4px}
+.btn-primary:active{opacity:.8}
+.empty{text-align:center;padding:28px;color:#8e8e93;font-size:14px}
+.conn-ok{color:#34c759;font-weight:500}
+.conn-err{color:#ff3b30;font-weight:500}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tab-bar">
+    <button class="tab active" onclick="showTab('record')">記録</button>
+    <button class="tab" onclick="showTab('chart')">グラフ</button>
+    <button class="tab" onclick="showTab('log')">履歴</button>
+    <button class="tab" onclick="showTab('settings')">設定</button>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- RECORD -->
+  <div id="tab-record">
+    <div id="setup-warn" class="setup-card" style="display:none">
+      <div class="setup-title">設定タブでGAS URLを登録してください</div>
+    </div>
+    <div class="card" style="padding:14px 14px 10px">
+      <div class="today-date" id="today-disp"></div>
+      <div class="today-sub" id="today-sub">本日の記録：0件</div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">本日 合計</div><div class="metric-value" id="m-total">0</div><div class="metric-sub">件</div></div>
+        <div class="metric"><div class="metric-label">TO→EI 転換率</div><div class="metric-value" id="m-rate">—</div><div class="metric-sub">施策効果</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">接客パターンをタップして記録</div>
+      <div class="pattern-btns" id="pat-btns"></div>
+    </div>
+    <div class="undo-row">
+      <button class="undo-btn" onclick="undoLast()">最後の1件を取り消す</button>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div id="tab-chart" style="display:none">
+    <div class="card" style="padding:12px">
+      <div class="section-label" style="margin-bottom:6px">期間フィルター</div>
+      <div class="filter-row" id="ptype-btns">
+        <button class="f-btn active" onclick="setPtype('month')">月別</button>
+        <button class="f-btn" onclick="setPtype('quarter')">四半期</button>
+        <button class="f-btn" onclick="setPtype('year')">年別</button>
+        <button class="f-btn" onclick="setPtype('all')">全期間</button>
+      </div>
+      <div id="psel-wrap"><select class="period-sel" id="period-sel" onchange="renderCharts()"></select></div>
+    </div>
+    <div class="metrics" id="chart-metrics"></div>
+    <div class="card" style="padding:12px 12px 6px">
+      <div class="section-label">構成比</div>
+      <div class="legend" id="pie-legend"></div>
+      <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+    </div>
+    <div class="card" style="padding:12px 12px 6px">
+      <div class="section-label">件数比較</div>
+      <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-label">実数データ</div>
+      <table class="tbl">
+        <thead><tr><th>パターン</th><th class="r">件数</th><th class="r">構成比</th></tr></thead>
+        <tbody id="data-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div id="tab-log" style="display:none">
+    <div class="card">
+      <div class="section-label">本日の記録</div>
+      <div id="log-list"><div class="empty">読み込み中...</div></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="tab-settings" style="display:none">
+    <div class="card">
+      <div class="section-label">GAS ウェブアプリURL</div>
+      <p style="font-size:12px;color:#8e8e93;margin-bottom:10px;line-height:1.6">Google Apps ScriptでデプロイしたウェブアプリのURLを貼り付けてください</p>
+      <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+      <button class="btn-primary" onclick="saveUrl()">URLを保存して接続テスト</button>
+      <div id="url-status" style="font-size:12px;margin-top:10px;color:#8e8e93"></div>
+    </div>
+    <div class="card">
+      <div class="section-label">接続ステータス</div>
+      <div id="conn-status" style="font-size:14px;color:#8e8e93">未接続</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PATTERNS = [
+  {name:'TO → EI', full:'テイクアウト → イートイン', color:'#E17A2F', bg:'#fff5ee'},
+  {name:'EI → TO', full:'イートイン → テイクアウト', color:'#1565C0', bg:'#eef4ff'},
+  {name:'TO → TO', full:'テイクアウト → テイクアウト', color:'#2E7D32', bg:'#f0faf0'},
+  {name:'EI → EI', full:'イートイン → イートイン',   color:'#6A1B9A', bg:'#f8f0ff'},
+];
+const COLORS_A = ['rgba(225,122,47,.82)','rgba(21,101,192,.82)','rgba(46,125,50,.82)','rgba(106,27,154,.82)'];
+
+// --- グローバル状態（タブ切替でリセットしない）---
+const state = {
+  allRows: null,       // null=未ロード, []=ロード済み
+  todayCounts: [0,0,0,0],
+  ptype: 'month',
+  pieInst: null,
+  barInst: null,
+};
+
+const getSavedUrl = () => localStorage.getItem('cafe_gas_url') || '';
+const setSavedUrl = u => localStorage.setItem('cafe_gas_url', u);
+const today = () => new Date().toISOString().slice(0,10);
+const todayJP = () => {
+  const d = new Date(), wd = '日月火水木金土'[d.getDay()];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${wd}）`;
+};
+
+function showTab(t) {
+  ['record','chart','log','settings'].forEach(id =>
+    document.getElementById('tab-'+id).style.display = id===t ? 'block' : 'none');
+  document.querySelectorAll('.tab').forEach((el,i) =>
+    el.classList.toggle('active', ['record','chart','log','settings'][i]===t));
+  if(t==='chart') {
+    ensureLoaded().then(() => { initPeriod(); renderCharts(); });
+  }
+  if(t==='log') {
+    ensureLoaded().then(renderLog);
+  }
+}
+
+function showToast(msg, isErr=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className='toast', 2400);
+}
+
+async function gasCall(params) {
+  const url = getSavedUrl();
+  if(!url) throw new Error('URL未設定');
+  const res = await fetch(url + '?' + new URLSearchParams(params));
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+// ロード済みならスキップ（タブ切替で再通信しない）
+async function ensureLoaded() {
+  if(state.allRows !== null) return;
+  await loadAll();
+}
+
+async function loadAll() {
+  try {
+    const d = await gasCall({action:'get'});
+    state.allRows = d.rows || [];
+    recalcToday();
+    updateTodayUI();
+    const n = state.allRows.length;
+    document.getElementById('conn-status').innerHTML = `<span class="conn-ok">接続済み（${n}件）</span>`;
+  } catch(e) {
+    state.allRows = state.allRows || [];
+    document.getElementById('conn-status').innerHTML = '<span class="conn-err">接続エラー</span>';
+  }
+}
+
+function recalcToday() {
+  state.todayCounts = [0,0,0,0];
+  (state.allRows||[]).filter(r => r.date === today()).forEach(r => {
+    const i = parseInt(r.pattern_index);
+    if(i >= 0 && i < 4) state.todayCounts[i]++;
+  });
+}
+
+function updateTodayUI() {
+  const total = state.todayCounts.reduce((a,b)=>a+b,0);
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-rate').textContent = total ? Math.round(state.todayCounts[0]/total*100)+'%' : '—';
+  document.getElementById('today-sub').textContent = '本日の記録：' + total + '件';
+  document.querySelectorAll('.pat-count').forEach((el,i) => el.textContent = state.todayCounts[i]);
+}
+
+async function addRecord(idx) {
+  const btn = document.querySelectorAll('.pat-btn')[idx];
+  btn.classList.add('loading');
+  try {
+    const now = new Date();
+    const jst = new Date(now.getTime() + 9*60*60*1000);
+    await gasCall({action:'add', date:today(), pattern:PATTERNS[idx].name, pattern_index:idx});
+    // ローカル状態を即時更新（再ロード不要）
+    state.todayCounts[idx]++;
+    if(state.allRows !== null) {
+      state.allRows.push({timestamp: jst.toISOString(), date: today(), pattern: PATTERNS[idx].name, pattern_index: idx});
+    }
+    updateTodayUI();
+    showToast(PATTERNS[idx].name + ' を記録しました');
+  } catch(e) {
+    showToast('保存に失敗しました', true);
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+async function undoLast() {
+  try {
+    await gasCall({action:'delete_last'});
+    // ローカルからも末尾を削除
+    if(state.allRows && state.allRows.length > 0) {
+      state.allRows.pop();
+      recalcToday();
+      updateTodayUI();
+    }
+    showToast('取り消しました');
+    renderLog();
+  } catch(e) { showToast('取り消しに失敗しました', true); }
+}
+
+function buildPatBtns() {
+  document.getElementById('pat-btns').innerHTML = PATTERNS.map((p,i) => `
+    <button class="pat-btn" onclick="addRecord(${i})" style="border-color:${p.color}44;background:${p.bg}">
+      <div class="pat-left">
+        <span class="pat-dot" style="background:${p.color}"></span>
+        <div>
+          <div class="pat-name" style="font-weight:600;color:${p.color}">${p.name}</div>
+          <div style="font-size:11px;color:#8e8e93;margin-top:2px">${p.full}</div>
+        </div>
+      </div>
+      <span class="pat-count" style="color:${p.color}">0</span>
+    </button>`).join('');
+}
+
+const getYM = d => d.slice(0,7);
+const getYQ = d => d.slice(0,4)+'-Q'+Math.ceil(parseInt(d.slice(5,7))/3);
+const getY  = d => d.slice(0,4);
+
+function getPeriods(type) {
+  const s = new Set();
+  (state.allRows||[]).forEach(r => {
+    if(type==='month') s.add(getYM(r.date));
+    else if(type==='quarter') s.add(getYQ(r.date));
+    else if(type==='year') s.add(getY(r.date));
+  });
+  return Array.from(s).sort();
+}
+
+function filterRows(type, period) {
+  if(type==='all') return state.allRows||[];
+  return (state.allRows||[]).filter(r => {
+    if(type==='month') return getYM(r.date)===period;
+    if(type==='quarter') return getYQ(r.date)===period;
+    if(type==='year') return getY(r.date)===period;
+  });
+}
+
+function setPtype(t) {
+  state.ptype = t;
+  document.querySelectorAll('#ptype-btns .f-btn').forEach((el,i) =>
+    el.classList.toggle('active', ['month','quarter','year','all'][i]===t));
+  document.getElementById('psel-wrap').style.display = t==='all' ? 'none' : 'block';
+  initPeriod(); renderCharts();
+}
+
+function initPeriod() {
+  const periods = getPeriods(state.ptype);
+  const sel = document.getElementById('period-sel');
+  sel.innerHTML = periods.length
+    ? periods.map(p=>`<option value="${p}">${p}</option>`).join('')
+    : '<option>データなし</option>';
+  if(periods.length) sel.value = periods[periods.length-1];
+}
+
+function renderCharts() {
+  const period = document.getElementById('period-sel').value;
+  const rows = filterRows(state.ptype, period);
+  const totals = [0,0,0,0];
+  rows.forEach(r => { const i=parseInt(r.pattern_index); if(i>=0&&i<4) totals[i]++; });
+  const grand = totals.reduce((a,b)=>a+b,0);
+
+  document.getElementById('chart-metrics').innerHTML =
+    `<div class="metric"><div class="metric-label">総接客数</div><div class="metric-value">${grand}</div><div class="metric-sub">件</div></div>
+     <div class="metric"><div class="metric-label">TO→EI 転換率</div><div class="metric-value">${grand?Math.round(totals[0]/grand*100)+'%':'—'}</div><div class="metric-sub">施策効果</div></div>`;
+
+  document.getElementById('pie-legend').innerHTML = PATTERNS.map((p,i) =>
+    `<span class="legend-item"><span class="legend-sq" style="background:${p.color}"></span>${p.name} ${grand?Math.round(totals[i]/grand*100):0}%</span>`).join('');
+
+  if(state.pieInst) state.pieInst.destroy();
+  state.pieInst = new Chart(document.getElementById('pieChart'), {
+    type:'doughnut',
+    data:{labels:PATTERNS.map(p=>p.name),datasets:[{data:totals,backgroundColor:PATTERNS.map(p=>p.color),borderWidth:2,borderColor:'rgba(255,255,255,.8)'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:ctx=>{const p=grand?Math.round(ctx.raw/grand*100):0;return ` ${ctx.raw}件 (${p}%)`;}}}}}
+  });
+
+  if(state.barInst) state.barInst.destroy();
+  state.barInst = new Chart(document.getElementById('barChart'), {
+    type:'bar',
+    data:{labels:PATTERNS.map(p=>p.name),datasets:[{data:totals,backgroundColor:COLORS_A,borderColor:PATTERNS.map(p=>p.color),borderWidth:1,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}},
+              x:{ticks:{font:{size:11},maxRotation:0},grid:{display:false}}}}
+  });
+
+  document.getElementById('data-tbody').innerHTML =
+    PATTERNS.map((p,i) => `<tr>
+      <td><span class="log-dot" style="background:${p.color}"></span>${p.name}</td>
+      <td class="r">${totals[i]}</td><td class="r">${grand?Math.round(totals[i]/grand*100):0}%</td>
+    </tr>`).join('') +
+    `<tr class="tot"><td>合計</td><td class="r">${grand}</td><td class="r">100%</td></tr>`;
+}
+
+function renderLog() {
+  const todayRows = (state.allRows||[]).filter(r=>r.date===today()).reverse();
+  const el = document.getElementById('log-list');
+  if(!todayRows.length) { el.innerHTML='<div class="empty">本日の記録はまだありません</div>'; return; }
+  el.innerHTML = todayRows.map(r => {
+    const i = parseInt(r.pattern_index);
+    const p = PATTERNS[i] || {name:r.pattern, color:'#888'};
+    const ts = r.timestamp ? new Date(r.timestamp).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="log-item">
+      <span><span class="log-dot" style="background:${p.color}"></span><span class="log-name">${p.name}</span></span>
+      <span class="log-time">${ts}</span>
+    </div>`;
+  }).join('');
+}
+
+async function saveUrl() {
+  const u = document.getElementById('gas-url-input').value.trim();
+  if(!u) { showToast('URLを入力してください', true); return; }
+  setSavedUrl(u);
+  document.getElementById('url-status').textContent = 'テスト中...';
+  state.allRows = null;
+  await loadAll();
+  const rows = state.allRows;
+  if(rows !== null) {
+    document.getElementById('url-status').textContent = '接続成功！ ' + rows.length + '件のデータが見つかりました';
+    document.getElementById('setup-warn').style.display = 'none';
+    showToast('接続しました');
+  } else {
+    document.getElementById('url-status').textContent = '接続失敗：URLを確認してください';
+    showToast('接続に失敗しました', true);
+  }
+}
+
+(async function init() {
+  buildPatBtns();
+  document.getElementById('today-disp').textContent = todayJP();
+  const saved = getSavedUrl();
+  if(saved) {
+    document.getElementById('gas-url-input').value = saved;
+    document.getElementById('setup-warn').style.display = 'none';
+    await loadAll();
+  } else {
+    document.getElementById('setup-warn').style.display = 'block';
+  }
+})();
+</script>
+</body>
+</html>
